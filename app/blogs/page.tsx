@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "../api/auth/[...nextauth]/route";
+import { authOptions } from "../api/auth/auth.config";
 import BlogList from "./blog-list";
 import CreateBlogButton from "./create-blog-button";
 import Navbar from "../components/Navbar";

@@ -34,6 +34,7 @@ export default function LoginForm() {
       router.refresh();
     } catch (error) {
       setError('Ocurrió un error al iniciar sesión');
+      console.error(error);
     } finally {
       setLoading(false);
     }

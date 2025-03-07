@@ -6,10 +6,21 @@ if (!process.env.MONGODB_URI) {
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-let cached = (global as any).mongoose;
+interface MongooseConnection {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
+
+// Extender el objeto global de NodeJS
+declare global {
+  // eslint-disable-next-line no-var
+  var mongoose: MongooseConnection | undefined;
+}
+
+let cached: MongooseConnection = global.mongoose || { conn: null, promise: null };
 
 if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
+  cached = global.mongoose = { conn: null, promise: null };
 }
 
 async function connectDB() {
