@@ -36,7 +36,14 @@ export default function CreateBlogButton() {
       }
 
       setIsModalOpen(false);
+      
+      // Forzar la actualización de los datos
       router.refresh();
+      
+      // Esperar un momento y recargar los datos
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
