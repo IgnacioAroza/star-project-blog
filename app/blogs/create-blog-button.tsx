@@ -1,13 +1,81 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function CreateBlogButton() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Función para cargar la imagen a Cloudinary
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      setError('Tipo de archivo no soportado. Por favor sube una imagen JPG, PNG, WEBP o GIF.');
+      return;
+    }
+
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('La imagen es demasiado grande. El tamaño máximo es 5MB.');
+      return;
+    }
+
+    try {
+      setError(null);
+      setUploading(true);
+      setUploadProgress(10);
+
+      // Crear FormData
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Enviar a nuestro endpoint
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      setUploadProgress(90);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al subir la imagen');
+      }
+
+      const data = await response.json();
+      setImageUrl(data.url);
+      setUploadProgress(100);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Error al subir la imagen');
+      }
+      console.error(err);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  // Función para eliminar la imagen cargada
+  function handleRemoveImage() {
+    setImageUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -18,7 +86,7 @@ export default function CreateBlogButton() {
     const data = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
-      image: formData.get('image') as string,
+      image: imageUrl, // Usar la URL de la imagen subida
     };
 
     try {
@@ -121,21 +189,92 @@ export default function CreateBlogButton() {
                     </div>
 
                     <div>
-                      <label htmlFor="image" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        URL de la imagen (opcional)
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Imagen (opcional)
                       </label>
-                      <input
-                        type="url"
-                        id="image"
-                        name="image"
-                        className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
+                      
+                      {/* Previsualización de imagen */}
+                      {imageUrl && (
+                        <div className="relative mb-2">
+                          <div className="relative h-48 w-full rounded-md overflow-hidden">
+                            <Image
+                              src={imageUrl}
+                              alt="Vista previa"
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleRemoveImage}
+                            className="absolute top-2 right-2 bg-red-600 rounded-full p-1 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                          >
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Input de archivo */}
+                      {!imageUrl && (
+                        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
+                          <div className="space-y-1 text-center">
+                            <svg
+                              className="mx-auto h-12 w-12 text-gray-400"
+                              stroke="currentColor"
+                              fill="none"
+                              viewBox="0 0 48 48"
+                              aria-hidden="true"
+                            >
+                              <path
+                                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                strokeWidth={2}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            <div className="flex text-sm text-gray-600 dark:text-gray-400">
+                              <label
+                                htmlFor="file-upload"
+                                className="relative cursor-pointer bg-white dark:bg-gray-700 rounded-md font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 px-2"
+                              >
+                                <span>Subir imagen</span>
+                                <input
+                                  id="file-upload"
+                                  ref={fileInputRef}
+                                  name="file-upload"
+                                  type="file"
+                                  accept="image/*"
+                                  className="sr-only"
+                                  onChange={handleImageUpload}
+                                  disabled={uploading}
+                                />
+                              </label>
+                              <p className="pl-1">o arrastra y suelta</p>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              PNG, JPG, GIF hasta 5MB
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Barra de progreso */}
+                      {uploading && (
+                        <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 overflow-hidden">
+                          <div 
+                            className="bg-indigo-600 h-2.5 transition-all duration-300 ease-out" 
+                            style={{ width: `${uploadProgress}%` }}
+                          ></div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                       <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || uploading}
                         className="inline-flex w-full justify-center rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-400 sm:ml-3 sm:w-auto disabled:opacity-50 transition-colors duration-200"
                       >
                         {loading ? 'Creando...' : 'Crear Blog'}
