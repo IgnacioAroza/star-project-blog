@@ -2,12 +2,20 @@
 
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Navbar() {
   const router = useRouter();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
+  const { theme, toggleTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Solo ejecutar en el cliente para evitar problemas de hidratación
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -21,26 +29,29 @@ export default function Navbar() {
     }
   };
 
+  // Si no está montado aún, no renderizar nada
+  if (!mounted) return null;
+
   return (
-    <nav className="bg-white shadow-lg">
+    <nav className="bg-white dark:bg-gray-800 shadow-lg transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <div className="flex-shrink-0">
-            <h1 className="text-lg sm:text-xl font-bold text-indigo-600 truncate">
+            <h1 className="text-lg sm:text-xl font-bold text-indigo-600 dark:text-indigo-400 truncate">
               Star Project Blog
             </h1>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <span className="text-sm sm:text-base text-gray-700 hidden sm:block">
+            <span className="text-sm sm:text-base text-gray-700 dark:text-gray-300 hidden sm:block">
               Hola,{' '}
             </span>
-            <span className="text-sm sm:text-base font-medium text-indigo-600 truncate max-w-[100px] sm:max-w-none">
+            <span className="text-sm sm:text-base font-medium text-indigo-600 dark:text-indigo-400 truncate max-w-[100px] sm:max-w-none">
               {session?.user?.name || 'Usuario'}
             </span>
             <button
               onClick={handleSignOut}
               disabled={isLoading}
-              className="ml-2 sm:ml-4 bg-red-600 text-white px-2 sm:px-4 py-1 sm:py-2 text-sm sm:text-base rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              className="ml-2 sm:ml-4 bg-red-600 dark:bg-red-700 text-white px-2 sm:px-4 py-1 sm:py-2 text-sm sm:text-base rounded-md hover:bg-red-700 dark:hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
               {isLoading ? (
                 <span className="flex items-center">

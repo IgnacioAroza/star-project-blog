@@ -39,14 +39,14 @@ export default function BlogList() {
     fetchBlogs();
   }, []); // Solo se ejecuta al montar el componente
 
-  if (loading) return <div className="text-center text-black">Cargando blogs...</div>;
+  if (loading) return <div className="text-center text-gray-800 dark:text-gray-200">Cargando blogs...</div>;
   if (error) return <div className="text-red-500 text-center">{error}</div>;
-  if (blogs.length === 0) return <div className="text-center text-black">No hay blogs publicados aún.</div>;
+  if (blogs.length === 0) return <div className="text-center text-gray-800 dark:text-gray-200">No hay blogs publicados aún.</div>;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {blogs.map((blog) => (
-        <article key={blog._id} className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <article key={blog._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-colors duration-200 border border-gray-200 dark:border-gray-700">
           {blog.image && (
             <div className="relative h-48">
               <Image
@@ -58,10 +58,10 @@ export default function BlogList() {
             </div>
           )}
           <div className="p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">{blog.title}</h2>
-            <p className="text-gray-600 mb-4">{blog.description}</p>
-            <div className="flex justify-between items-center text-sm text-gray-500">
-              <span>Lo escribio: {blog.author.name}</span>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{blog.title}</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">{blog.description}</p>
+            <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+              <span>Lo escribió: {blog.author.name}</span>
               <time>Fecha: {new Date(blog.createdAt).toLocaleDateString('es-ES')}</time>
             </div>
           </div>
