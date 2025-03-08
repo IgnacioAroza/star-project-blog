@@ -3,13 +3,11 @@
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { useTheme } from '../context/ThemeContext';
 
 export default function Navbar() {
   const router = useRouter();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
-  const { theme, toggleTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   // Solo ejecutar en el cliente para evitar problemas de hidratación
