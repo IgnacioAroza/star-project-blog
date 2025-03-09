@@ -9,17 +9,17 @@ export const authOptions: AuthOptions = {
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: "Email", type: "email" },
+        name: { label: "Nombre de usuario", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Please enter an email and password');
+        if (!credentials?.name || !credentials?.password) {
+          throw new Error('Please enter an name and password');
         }
 
         await connectDB();
 
-        const user = await User.findOne({ email: credentials.email });
+        const user = await User.findOne({ name: credentials.name });
 
         if (!user) {
           throw new Error('No user found');

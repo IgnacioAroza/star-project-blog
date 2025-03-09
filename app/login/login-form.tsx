@@ -15,12 +15,12 @@ export default function LoginForm() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
+    const name = formData.get('name') as string;
     const password = formData.get('password') as string;
 
     try {
       const result = await signIn('credentials', {
-        email,
+        name,
         password,
         redirect: false,
       });
@@ -49,16 +49,16 @@ export default function LoginForm() {
       )}
       <div className="rounded-md shadow-sm -space-y-px">
         <div>
-          <label htmlFor="email" className="sr-only">
-            Email
+          <label htmlFor="name" className="sr-only">
+            Nombre de usuario
           </label>
           <input
-            id="email"
-            name="email"
-            type="email"
+            id="name"
+            name="name"
+            type="text"
             required
             className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-white dark:bg-gray-700"
-            placeholder="Email"
+            placeholder="Nombre de usuario"
           />
         </div>
         <div>
